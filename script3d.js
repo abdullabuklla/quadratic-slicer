@@ -538,19 +538,7 @@ function windowResized(){ resizeCanvas(windowWidth,windowHeight); }
 
 
 
-function isMobile() {
-    return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-}
-function touchStarted() {
-    if (!mouseIsPressed && isMobile() && !typing()) {
-        const t3d = captureSlice();                   // 3D trace
-        traces.push(t3d);
 
-        const col2d = pg2.color(t3d.col.toString());  // same hue in 2D
-        traces2d.push(sliceDots2d(z, col2d));
-    }
-    return false; // prevent scroll
-}
 
 
 
