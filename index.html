@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Quadric Slicer</title>
+    <style>
+        :root      { --bg:#1a0e1c; --fg:#ddd; --accent:#00b3ff; }
+        html,body  { margin:0;height:100%;background:var(--bg);color:var(--fg);
+            font:14px sans-serif;overflow:hidden }
+        /* UI bar */
+        #ui         { position:absolute;top:8px;left:0;right:0;width:max-content;margin:auto;
+            padding:6px 16px;background:rgba(25,25,25,.85);border-radius:8px;
+            box-shadow:0 0 6px #000;font-size:13px;display:flex;flex-direction:column;gap:6px }
+        .row        { display:flex;gap:14px;align-items:center }
+        label       { display:flex;flex-direction:column;font-weight:600 }
+        input,select{ width:50px;margin-top:2px;padding:3px 5px;border:none;border-radius:4px;
+            background:#222;color:var(--fg) }
+        input[type=range]{ width:220px }
+        #eq, #preset { width:190px}
+        button      { padding:6px 12px;font-weight:700;cursor:pointer;
+            background:var(--accent);color:#011;border:none;border-radius:4px }
+        canvas      { pointer-events:auto }     /* keep orbit-drag alive after UI clicks */
+
+        #legend      { position:fixed; right:20px; top:30%; transform:translateY(-50%);
+            display:flex; flex-direction:column; align-items:center; gap:4px } /* gap added */
+        /* bigger bar + full-spectrum gradient */
+        #legend .bar{
+            width:26px;                    /* any size you like */
+            height:220px;
+            background:linear-gradient(
+                    to bottom,
+                    hsl(  0 70% 70%)  0%,   /* red   = max z */
+                    hsl( 40 70% 70%) 20%,   /* orange */
+                    hsl( 60 70% 70%) 35%,   /* yellow ✔ */
+                    hsl(110 70% 70%) 55%,   /* green  */
+                    hsl(180 70% 70%) 75%,   /* cyan   */
+                    hsl(220 70% 70%) 100%   /* blue  = min z */
+            );
+            border-radius:4px;
+        }
+        #legend .lbl{ font:13px/1 sans-serif; color:#ddd }
+
+        #preview2d{
+            position:fixed; bottom:15px; right:15px;        /* fixed on the right   */
+            width:380px; height:380px;                  /* square               */
+            background:#111; border-left:0px solid #222;
+            border-radius:10px;
+        }
+        #preview2d canvas{ cursor:grab;border-radius:10px; }
+
+
+    </style>
+</head>
+<body>
+<div id="ui">
+
+    <!-- row 1 — numeric inputs -->
+    <div class="row">
+        <label>min z  <input id="minZ"  type="number" value="0"></label>
+        <label>max z  <input id="maxZ"  type="number" value="5"></label>
+        <label>speed Δz/s <input id="spd" type="number" value="1" step="0.2"></label>
+<!--        <label>frames <input id="frames" type="number" value="120"></label>-->
+        <label>resol. <input id="grid"  type="number" value="300" step="10"></label>
+        <label>surface
+            <select id="preset">
+                <option value="">— choose —</option>
+
+                <!-- ─────────  Sphere R = 5  ───────── -->
+                <optgroup label="Sphere  (R = 5)">
+                    <option value="sqrt( 25 - x*x - y*y )">
+                        sphere (top)   z = +√(25 − x² − y²)
+                    </option>
+                    <option value="-sqrt( 25 - x*x - y*y )">
+                        sphere (bottom) z = −√(25 − x² − y²)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Ellipsoid  a=4, b=5, c=3  ───────── -->
+                <optgroup label="Ellipsoid  (4, 5, 3)">
+                    <option value=" 3*sqrt( 1 - x*x/16 - y*y/25 )">
+                        ellipsoid (top)
+                    </option>
+                    <option value="-3*sqrt( 1 - x*x/16 - y*y/25 )">
+                        ellipsoid (bottom)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Prolate spheroid  a=b=4, c=6  ───────── -->
+                <optgroup label="Prolate spheroid  (a=b=4, c=6)">
+                    <option value=" 6*sqrt( 1 - (x*x + y*y)/16 )">
+                        prolate spheroid (top)
+                    </option>
+                    <option value="-6*sqrt( 1 - (x*x + y*y)/16 )">
+                        prolate spheroid (bottom)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Oblate spheroid  a=b=6, c=4  ───────── -->
+                <optgroup label="Oblate spheroid  (a=b=6, c=4)">
+                    <option value=" 4*sqrt( 1 - (x*x + y*y)/36 )">
+                        oblate spheroid (top)
+                    </option>
+                    <option value="-4*sqrt( 1 - (x*x + y*y)/36 )">
+                        oblate spheroid (bottom)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Paraboloids  ───────── -->
+                <optgroup label="Paraboloids">
+                    <option value="0.12*(x*x + y*y)">
+                        elliptic paraboloid   z = a·(x² + y²)
+                    </option>
+                    <option value="5 - 0.12*(x*x + y*y)">
+                        elliptic paraboloid (concave down)
+                    </option>
+                    <option value="0.12*(x*x - y*y)">
+                        hyperbolic paraboloid (saddle)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Hyperboloids  ───────── -->
+                <optgroup label="Hyperboloids">
+                    <!-- one‑sheet (top half) -->
+                    <option value="sqrt( 1 + (x*x + y*y)/9 )">
+                        1‑sheet hyperboloid (top)
+                    </option>
+                    <!-- two‑sheet (top sheet) -->
+                    <option value="sqrt( (x*x + y*y)/9 - 1 )">
+                        2‑sheet hyperboloid (top)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Cones  ───────── -->
+                <optgroup label="Cones">
+                    <option value=" sqrt( x*x/16 + y*y/25 )">
+                        elliptic cone (top)
+                    </option>
+                    <option value="-sqrt( x*x/16 + y*y/25 )">
+                        elliptic cone (bottom)
+                    </option>
+                    <option value="abs( sqrt( x*x/16 + y*y/25 ) )">
+                        double cone (±)
+                    </option>
+                </optgroup>
+
+                <!-- ─────────  Parabolic cylinder  ───────── -->
+                <optgroup label="Cylindrical">
+                    <option value="-(x*x) / 10">
+                        parabolic cylinder  z = −x² / 10
+                    </option>
+                </optgroup>
+            </select>
+        </label>
+
+
+
+
+        <label>f(x,y)=<input id="eq" value="0.12*(x*x + y*y)"></label>
+    </div>
+
+    <div id="legend">
+        <span id="zMax" class="lbl"></span>   <!-- ⬅ move this line ABOVE the bar -->
+        <div  class="bar"></div>
+        <span id="zMin" class="lbl"></span>
+    </div>
+
+
+    <!-- row 2 — equation display, slider, buttons -->
+    <div class="row">
+        <span id="surfTxt" style="font-weight:700; color: white; font-size: 20px;">f(x,y)=0.12*(x*x + y*y)</span>
+        <label style="margin-left:24px">z-plane
+            <input id="zSlide" type="range" min="-5" max="5" step="0.05" value="0">
+        </label>
+        <button id="animate">Animate</button>
+        <button id="pause">Pause</button>
+        <button id="reset">Reset</button>
+
+        <!-- toggle 2‑D preview -->
+        <label style="margin-left:12px; font-weight:600">
+           <input id="show2d" type="checkbox" checked> 2‑D preview
+        </label>
+    </div>
+
+    <div id="preview2d"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+<script src="script3d.js"></script>
+</body>
+</html>
