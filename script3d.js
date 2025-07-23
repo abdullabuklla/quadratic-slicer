@@ -536,6 +536,18 @@ function keyReleased(){ if([UP_ARROW,DOWN_ARROW].includes(keyCode)) glide=0; }
 const typing=()=>['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName);
 function windowResized(){ resizeCanvas(windowWidth,windowHeight); }
 
+function touchStarted() {
+    if (!typing()) {
+        const t3d = captureSlice();                   // 3D trace
+        traces.push(t3d);
+
+        const col2d = pg2.color(t3d.col.toString());  // same hue in 2D
+        traces2d.push(sliceDots2d(z, col2d));
+    }
+    return false; // prevent page scroll
+}
+
+
 /* ───── HELPERS ───── */
 function pretty(expr){
     return expr
