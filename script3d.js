@@ -28,6 +28,18 @@ function preload() {
         'https://cdn.jsdelivr.net/gh/stipub/stixfonts@v2.13/fonts/static_otf/STIXTwoMath-Regular.otf'
     );}
 
+/* Storing user's device details in a variable*/
+let details = navigator.userAgent;
+
+/* Creating a regular expression
+containing some mobile devices keywords
+to search it in details string*/
+let regexp = /android|iphone|kindle|ipad/i;
+
+/* Using test() method to search regexp in details
+it returns boolean value*/
+let isMobile = regexp.test(details);
+
 
 
 /* ───── INIT ───── */
@@ -144,7 +156,24 @@ function setup(){
             ui.show2d.checked() ? 'block' : 'none');
     });
 
+    if (isMobile) {
+        select('#mobileControls').style('display', 'flex');
+    }
 
+    select('#btnUp').mousePressed(() => {
+        glide=+1
+    });
+
+    select('#btnDown').mousePressed(() => {
+        glide=-1
+    });
+
+    select('#btnSpace').mousePressed(() => {
+        const t3d = captureSlice();
+        traces.push(t3d);
+        const col2d = pg2.color(t3d.col.toString());
+        traces2d.push(sliceDots2d(z, col2d));
+    });
 
 
 

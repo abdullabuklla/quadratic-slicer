@@ -61,6 +61,16 @@
             z-index:999;                       /* stays on top */
         }
 
+        #mobileControls{
+            display:none;
+            position:absolute;
+            bottom:50px;
+            left:50%;
+            transform:translateX(-50%);
+            gap:10px;
+            z-index:10
+        }
+
 
     </style>
 </head>
@@ -196,9 +206,16 @@
 
     <div id="preview2d"></div>
 
+
+
     <div id="hud-help">
         Scroll = zoom | Drag = orbit | ↑/↓ = move plane | SPACE = freeze slice
     </div>
+</div>
+<div id="mobileControls">
+    <button id="btnUp">⬆️</button>
+    <button id="btnSpace">⏺ Add Trace</button>
+    <button id="btnDown">⬇️</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
