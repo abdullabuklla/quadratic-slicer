@@ -511,11 +511,7 @@ function drawHUD(){
     translate(-width/2+12,-height/2+14,0);
     rotateY(-rotationY); rotateX(-rotationX);
     fill('#7cf'); noStroke(); textSize(15); textAlign(LEFT,TOP);
-    fill('#aaa');            // light‑grey text
-    textSize(14);
-    textAlign(CENTER, BOTTOM);
-    text('Scroll = zoom  |  Drag = orbit  |  SPACE = freeze slice', 0, 0);
-    pop();    // text(pretty(ui.eq.value()),0,0); text('= '+z.toFixed(2),0,18); pop();
+    // text(pretty(ui.eq.value()),0,0); text('= '+z.toFixed(2),0,18); pop();
 }
 
 /* ───── INPUT ───── */

@@ -49,6 +49,19 @@
         #preview2d canvas{ cursor:grab;border-radius:10px; }
 
 
+        /* anywhere in your CSS file or inside <style> */
+        #hud-help{
+            position:fixed;
+            bottom:10px;
+            left:50%;
+            transform:translateX(-50%);
+            font:14px/1.2 "Roboto",sans-serif;  /* match UI font */
+            color:#aaa;
+            pointer-events:none;               /* clicks pass through */
+            z-index:999;                       /* stays on top */
+        }
+
+
     </style>
 </head>
 <body>
@@ -182,6 +195,9 @@
     </div>
 
     <div id="preview2d"></div>
+
+    <div id="hud-help">Scroll = zoom | Drag = orbit | SPACE = freeze slice</div>
+
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
