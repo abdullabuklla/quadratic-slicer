@@ -156,8 +156,26 @@ function setup(){
             ui.show2d.checked() ? 'block' : 'none');
     });
 
-    if (true) {
-        select('#mobileControls').style('display', 'flex');
+    if (isMobile) {
+        const mobileControls = select('#mobileControls');
+
+        mobileControls
+            .style('display',   'flex')
+            .style('background','rgba(0,0,0,0.5)')
+            .style('padding',   '10px')
+            .style('border-radius','8px');
+
+
+        // ensure the container itself catches all pointer events
+        mobileControls.elt.style.pointerEvents = 'auto';
+
+        // stop any pointer/touch on the container from reaching the canvas
+        ['pointerdown','pointermove','pointerup','touchstart','touchmove','touchend'].forEach(evt => {
+            mobileControls.elt.addEventListener(evt, e => {
+                e.stopPropagation();
+            }, { capture: true });
+        });
+
         // ─ disable selection/zoom on the three controls ─
         ['#btnUp','#btnDown','#btnSpace'].forEach(sel => {
             const btn = select(sel);
@@ -171,20 +189,21 @@ function setup(){
             e.addEventListener('contextmenu', e => e.preventDefault());
         });
 
-        // ─ enlarge every button and input on mobile ─
-        selectAll('button, input').forEach(el => {
-            el.style('font-size', '2em');
-            el.style('padding',   '0.6em');
+        // grab the mobileControls container
+        const mc = select('#mobileControls').elt;
+
+        // enlarge all buttons, inputs and selects inside it
+        mc.querySelectorAll('button, input, select').forEach(el => {
+            el.style.fontSize   = '2em';
+            el.style.padding    = '0.6em';
+            el.style.minWidth   = '3em';    // ensure they have some width
+            el.style.minHeight  = '3em';
         });
-        // also enlarge dropdowns (<select>) and radio buttons
-        selectAll('select').forEach(el => {
-            el.style('font-size', '2em')
-                .style('padding',   '0.6em');
-        });
-        selectAll('input[type="radio"]').forEach(el => {
-            // scale up the actual circle
-            el.style('transform', 'scale(1.5)')
-                .style('margin',    '0.5em');
+
+        // specifically scale up checkboxes
+        mc.querySelectorAll('input[type="checkbox"]').forEach(el => {
+            el.style.transform = 'scale(1.5)';
+            el.style.margin    = '0.5em';
         });
     }
 
