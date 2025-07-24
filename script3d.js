@@ -156,8 +156,36 @@ function setup(){
             ui.show2d.checked() ? 'block' : 'none');
     });
 
-    if (isMobile) {
+    if (true) {
         select('#mobileControls').style('display', 'flex');
+        // ─ disable selection/zoom on the three controls ─
+        ['#btnUp','#btnDown','#btnSpace'].forEach(sel => {
+            const btn = select(sel);
+            if (!btn) return;
+            const e = btn.elt;
+            e.style.userSelect       = 'none';
+            e.style.webkitUserSelect = 'none';
+            e.style.msUserSelect     = 'none';
+            e.style.touchAction      = 'manipulation';
+            e.addEventListener('selectstart', e => e.preventDefault());
+            e.addEventListener('contextmenu', e => e.preventDefault());
+        });
+
+        // ─ enlarge every button and input on mobile ─
+        selectAll('button, input').forEach(el => {
+            el.style('font-size', '2em');
+            el.style('padding',   '0.6em');
+        });
+        // also enlarge dropdowns (<select>) and radio buttons
+        selectAll('select').forEach(el => {
+            el.style('font-size', '2em')
+                .style('padding',   '0.6em');
+        });
+        selectAll('input[type="radio"]').forEach(el => {
+            // scale up the actual circle
+            el.style('transform', 'scale(1.5)')
+                .style('margin',    '0.5em');
+        });
     }
 
     select('#btnUp').mousePressed(() => {
